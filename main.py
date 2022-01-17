@@ -62,17 +62,20 @@ if exit1==False:
     window1 = tk.Tk()
     window1.title("Real Time Human Detection & Counting")
     window1.iconbitmap('Images/icon.ico')
-    window1.geometry('1000x700')
+    window1.geometry('1000x1000')
 
     filename=""
     filename1=""
     filename2=""
+    filename3=""
+    filename4=""
 
     def argsParser():
         arg_parse = argparse.ArgumentParser()
         arg_parse.add_argument("-v", "--video", default=None, help="path to Video File ")
         arg_parse.add_argument("-i", "--image", default=None, help="path to Image File ")
         arg_parse.add_argument("-c", "--camera", default=False, help="Set true if you want to use the camera.")
+        arg_parse.add_argument("-t", "--cctv", default=False, help="Set true if you want to use the cctv.") 
         arg_parse.add_argument("-o", "--output", type=str, help="path to optional output video file")
         args = vars(arg_parse.parse_args())
         return args
@@ -674,7 +677,228 @@ if exit1==False:
         windowc.protocol("WM_DELETE_WINDOW", exit_winc)
 
 
-    # options -----------------------------
+    #-------------------------------cctv section -------------------------------------------------
+   
+
+    def cctv_option():
+        # new window created for camera section
+        windowt = tk.Tk()
+        windowt.title("Human Detection from CCTV")
+        windowt.iconbitmap('Images/icon.ico')
+        windowt.geometry('1000x700')
+
+        max_count4 = 0
+        framex4 = []
+        county4 = []
+        max4 = []
+        avg_acc4_list = []
+        max_avg_acc4_list = []
+        max_acc4 = 0
+        max_avg_acc4 = 0
+
+        def open_vid():
+            global filename4, max_count4, framex4, county4, max4, avg_acc4_list, max_avg_acc4_list, max_acc4, max_avg_acc4
+            max_count4 = 0
+            framex4 = []
+            county4 = []
+            max4=[]
+            avg_acc4_list = []
+            max_avg_acc4_list = []
+            max_acc4 = 0
+            max_avg_acc4 = 0
+
+            filename4 = path_text3.get("1.0",'end-1c')
+    
+        def detectByCctv():
+            global filename4, max_count4, framex4, county4, max4, avg_acc4_list, max_avg_acc4_list, max_acc4, max_avg_acc4
+            max_count4 = 0
+            framex4 = []
+            county4 = []
+            max4 = []
+            avg_acc4_list = []
+            max_avg_acc4_list = []
+            max_acc4 = 0
+            max_avg_acc4 = 0
+
+            cc_video_path = filename4
+
+            if (cc_video_path == ""):
+                mbox.showerror("Error", "Enter Valid Adress!", parent = windowt)
+                return
+
+            info1.config(text="Status : Detecting...")
+
+            mbox.showinfo("Status", "Detecting, Please Wait...", parent=windowt)
+
+
+
+            args = argsParser()
+            writer = None
+            if args['output'] is not None:
+                writer = cv2.VideoWriter(args['output'], cv2.VideoWriter_fourcc(*'MJPG'), 10, (600, 600))
+
+
+
+            detectByPathCctv(cc_video_path, writer)
+
+
+            # the main process of detection in video takes place here
+
+
+
+        def detectByPathCctv(path,writer):
+
+                global filename4, max_count4, framex4, county4, max4, avg_acc4_list, max_avg_acc4_list, max_acc4, max_avg_acc4
+                max_count4 = 0
+                framex4 = []
+                county4 = []
+                max4 = []
+                avg_acc4_list = []
+                max_avg_acc4_list = []
+                max_acc4 = 0
+                max_avg_acc4 = 0
+
+
+                # function defined to plot the people count in camera
+                def cam_enumeration_plot():
+                    plt.figure(facecolor='orange', )
+                    ax = plt.axes()
+                    ax.set_facecolor("yellow")
+                    plt.plot(framex4, county4, label="Human Count", color="green", marker='o', markerfacecolor='blue')
+                    plt.plot(framex4, max4, label="Max. Human Count", linestyle='dashed', color='fuchsia')
+                    plt.xlabel('Time (sec)')
+                    plt.ylabel('Human Count')
+                    plt.legend()
+                    plt.title("Enumeration Plot")
+                    plt.get_current_fig_manager().canvas.set_window_title("Plot for Camera")
+                    plt.show()
+
+                def cam_accuracy_plot():
+                    plt.figure(facecolor='orange', )
+                    ax = plt.axes()
+                    ax.set_facecolor("yellow")
+                    plt.plot(framex4, avg_acc4_list, label="Avg. Accuracy", color="green", marker='o', markerfacecolor='blue')
+                    plt.plot(framex4, max_avg_acc4_list, label="Max. Avg. Accuracy", linestyle='dashed', color='fuchsia')
+                    plt.xlabel('Time (sec)')
+                    plt.ylabel('Avg. Accuracy')
+                    plt.title('Avg. Accuracy Plot')
+                    plt.legend()
+                    plt.get_current_fig_manager().canvas.set_window_title("Plot for Camera")
+                    plt.show()
+
+                def cam_gen_report():
+                    pdf = FPDF(orientation='P', unit='mm', format='A4')
+                    pdf.add_page()
+                    pdf.set_font("Arial", "", 20)
+                    pdf.set_text_color(128, 0, 0)
+                    pdf.image('Images/Crowd_Report.png', x=0, y=0, w=210, h=297)
+
+                    pdf.text(125, 150, str(max_count4))
+                    pdf.text(105, 163, str(max_acc4))
+                    pdf.text(125, 175, str(max_avg_acc4))
+                    if (max_count3 > 25):
+                        pdf.text(26, 220, "Max. Human Detected is greater than MAX LIMIT.")
+                        pdf.text(70, 235, "Region is Crowded.")
+                    else:
+                        pdf.text(26, 220, "Max. Human Detected is in range of MAX LIMIT.")
+                        pdf.text(65, 235, "Region is not Crowded.")
+
+                    pdf.output('Crowd_Report.pdf')
+                    mbox.showinfo("Status", "Report Generated and Saved Successfully.", parent = windowc) 
+
+
+
+                video = cv2.VideoCapture(path)
+                odapi = DetectorAPI()
+                threshold = 0.7
+                x3 = 0
+
+                while True:
+                    check, frame = video.read()
+                    try:
+                        img = cv2.resize(frame, (800, 600))
+                    except:
+                        break
+                    boxes, scores, classes, num = odapi.processFrame(img)
+                    person = 0
+                    acc = 0
+                    for i in range(len(boxes)):
+
+                        if classes[i] == 1 and scores[i] > threshold:
+                            box = boxes[i]
+                            person += 1
+                            cv2.rectangle(img, (box[1], box[0]), (box[3], box[2]), (255, 0, 0), 2)  # cv2.FILLED
+                            cv2.putText(img, f'P{person, round(scores[i], 2)}', (box[1] - 30, box[0] - 8),cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 1)  # (75,0,130),
+                            acc += scores[i]
+                            if (scores[i] > max_acc3):
+                                max_acc3 = scores[i]
+
+                    if (person > max_count4):
+                        max_count4 = person
+
+                    if writer is not None:
+                        writer.write(img)
+
+                    cv2.imshow("Human Detection from Camera", img)
+                    key = cv2.waitKey(1)
+                    if key & 0xFF == ord('q'):
+                        break
+
+                    county4.append(person)
+                    x3 += 1
+                    framex4.append(x3)
+                    if(person>=1):
+                        avg_acc4_list.append(acc / person)
+                        if ((acc / person) > max_avg_acc4):
+                            max_avg_acc4 = (acc / person)
+                    else:
+                        avg_acc4_list.append(acc)
+
+                video.release()
+
+                cv2.destroyAllWindows()
+
+                for i in range(len(framex4)):
+                    max4.append(max_count4)
+                    max_avg_acc4_list.append(max_avg_acc4)
+
+                Button(windowt, text="Enumeration\nPlot", command=cam_enumeration_plot, cursor="hand2", font=("Arial", 20),bg="orange", fg="blue").place(x=100, y=530)
+                Button(windowt, text="Avg. Accuracy\nPlot", command=cam_accuracy_plot, cursor="hand2", font=("Arial", 20),bg="orange", fg="blue").place(x=700, y=530)
+                Button(windowt, text="Generate  Crowd  Report", command=cam_gen_report, cursor="hand2", font=("Arial", 20),bg="gray", fg="blue").place(x=325, y=550)
+
+
+
+        lbl1 = tk.Label(windowt, text="DETECT  FROM\nCCTV", font=("Arial", 50, "underline"), fg="brown")  # same way bg
+        lbl1.place(x=230, y=20)
+
+        lbl2 = tk.Label(windowt,text="Enter The CCTV Ip Address", font=("Arial", 20),fg="green")
+        lbl2.place(x=80, y=200)
+
+        path_text3 = tk.Text(windowt, height=1, width=37, font=("Arial", 30), bg="light yellow", fg="orange",borderwidth=2, relief="solid")
+        path_text3.place(x=80, y = 260)
+
+       
+
+        Button(windowt, text="SELECT",command=open_vid, cursor="hand2", font=("Arial", 20), bg = "orange", fg = "blue").place(x = 350, y = 350)
+
+        Button(windowt, text="DETECT",command=detectByCctv, cursor="hand2", font=("Arial", 20), bg = "orange", fg = "blue").place(x = 700, y = 350)
+
+
+        info1 = tk.Label(windowt, font=("Arial", 30), fg="gray")  # same way bg
+        info1.place(x=100, y=440)
+        # info2 = tk.Label(windowv, font=("Arial", 30), fg="gray")  # same way bg
+        # info2.place(x=100, y=500)
+
+        #function defined to exit from windowv section
+        def exit_winv():
+            if mbox.askokcancel("Exit", "Do you want to exit?", parent = windowt):
+                windowt.destroy()
+        windowt.protocol("WM_DELETE_WINDOW", exit_winv)
+
+    
+    # options --------------------------------------------------------
+
+
     lbl1 = tk.Label(text="OPTIONS", font=("Arial", 50, "underline"),fg="brown")  # same way bg
     lbl1.place(x=340, y=20)
 
@@ -696,10 +920,18 @@ if exit1==False:
     panelc = tk.Label(window1, image = imgc)
     panelc.place(x = 90, y = 415)
 
+    #image on the main window
+    patht = "Images/image4.jpg"
+    imgt = ImageTk.PhotoImage(Image.open(patht))
+    panelt = tk.Label(window1, image = imgt)
+    panelt.place(x = 700, y = 550)
+
+
     # created button for all three option
     Button(window1, text="DETECT  FROM   IMAGE ➡",command=image_option, cursor="hand2", font=("Arial",30), bg = "light green", fg = "blue").place(x = 350, y = 150)
     Button(window1, text="DETECT  FROM  VIDEO ➡",command=video_option, cursor="hand2", font=("Arial", 30), bg = "light blue", fg = "blue").place(x = 110, y = 300) #90, 300
     Button(window1, text="DETECT FROM CAMERA ➡",command=camera_option, cursor="hand2", font=("Arial", 30), bg = "light green", fg = "blue").place(x = 350, y = 450)
+    Button(window1, text="DETECT FROM CCTV ➡",command=cctv_option, cursor="hand2", font=("Arial", 30), bg = "light blue", fg = "blue").place(x = 110, y = 600)
 
     # function defined to exit from window1
     def exit_win1():
@@ -707,7 +939,7 @@ if exit1==False:
             window1.destroy()
 
     # created exit button
-    Button(window1, text="❌ EXIT",command=exit_win1,  cursor="hand2", font=("Arial", 25), bg = "red", fg = "blue").place(x = 440, y = 600)
+    Button(window1, text="❌ EXIT",command=exit_win1,  cursor="hand2", font=("Arial", 25), bg = "red", fg = "blue").place(x = 440, y = 700)
 
     window1.protocol("WM_DELETE_WINDOW", exit_win1)
     window1.mainloop()

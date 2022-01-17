@@ -59,3 +59,9 @@ class DetectorAPI:
     def close(self):
         self.sess.close()
         self.default_graph.close()
+
+
+#score=human score
+#boxes=no of persons
+#clasees=humans
+#num=no of humans
