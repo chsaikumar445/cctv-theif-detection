@@ -1,0 +1,3 @@
+http://185.137.146.14/mjpg/video.mjpg
+
+http://83.56.31.69/mjpg/video.mjpg

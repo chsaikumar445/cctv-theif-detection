@@ -16,12 +16,12 @@ from fpdf import FPDF
 
 # Main Window & Configuration
 window = tk.Tk()
-window.title("Real Time Human Detection & Counting")
+window.title("Human Detection From CCTV")
 window.iconbitmap('Images/icon.ico')
 window.geometry('1000x700')
 
 # top label
-start1 = tk.Label(text = "REAL-TIME-HUMAN\nDETECTION  &  COUNTING", font=("Arial", 50,"underline"), fg="magenta") # same way bg
+start1 = tk.Label(text = "HUMAN DETECTION\n FROM CCTV  ", font=("Arial", 50,"underline"), fg="magenta") # same way bg
 start1.place(x = 70, y = 10)
 
 # function defined to start the main application
@@ -60,7 +60,7 @@ window.mainloop()
 if exit1==False:
     # Main Window & Configuration of window1
     window1 = tk.Tk()
-    window1.title("Real Time Human Detection & Counting")
+    window1.title("Human Detection FROM CCTV")
     window1.iconbitmap('Images/icon.ico')
     window1.geometry('1000x1000')
 
@@ -830,8 +830,8 @@ if exit1==False:
                             cv2.rectangle(img, (box[1], box[0]), (box[3], box[2]), (255, 0, 0), 2)  # cv2.FILLED
                             cv2.putText(img, f'P{person, round(scores[i], 2)}', (box[1] - 30, box[0] - 8),cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 1)  # (75,0,130),
                             acc += scores[i]
-                            if (scores[i] > max_acc3):
-                                max_acc3 = scores[i]
+                            if (scores[i] > max_acc4):
+                                max_acc4 = scores[i]
 
                     if (person > max_count4):
                         max_count4 = person
