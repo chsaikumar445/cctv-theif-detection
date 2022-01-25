@@ -1,4 +1,4 @@
-## ✔ REAL TIME HUMAN DETECTION & COUNTING
+## ✔ HUMAN DETECTION FROM CCTV
 - An application which allows to detect human or people's in any image, video or even through Camera.
 - Also along with detecting, it also counts the maximum no. of people appeared.
 - It also visualize the data of no. of human detected and the avg. accuracy with which humans got detected w.r.t. time, using graph plot.
